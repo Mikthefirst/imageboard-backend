@@ -13,10 +13,12 @@ class DB_Thread_Operations{
             time:row.time
         }));
     }
-    async add_thread(thread) {
+    async add_thread(thread, img_name) {
         try {
-            await db.query('INSERT INTO threads (Name, id, description, img, time) VALUES($1, $2, $3, $4, CURRENT_TIMESTAMP)',
-                [thread.name, thread.id, thread.desc, thread.img]);
+            const row = await db.query('SELECT COUNT(*) FROM threads');
+            const id = result.rows[0]['count']+1;
+              await db.query(`INSERT INTO threads (id, name, description, img, time) VALUES (${id}, '${thread.name}', '${thread.comment}', '${img_name}', CURRENT_TIMESTAMP)`);
+        
             await db.query(`CREATE TABLE ${thread.id}`);
         }
         catch (err) {
@@ -25,7 +27,8 @@ class DB_Thread_Operations{
     }
     async delete_thread(id) {
         try {
-             await db.query(`DROP TABLE $id}`);
+            await db.query(`DROP TABLE table_${id}`);
+            await db.query(`DELETE FROM threads WHERE id=${id}`);
         }   
          catch (err) {
             console.log(err.stack);
