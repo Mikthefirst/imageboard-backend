@@ -6,11 +6,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3001;
 app.use(express.json());
-app.use(cors(
-    {
-        origin:'*'
-    }
-));
+app.use(cors());
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, __dirname+'\\..\\..\\frontend\\public\\img\\')
@@ -38,14 +34,23 @@ app.get('/api/threads/:number', async (req, res) => {
 });
 
 app.get('/api/post/:id', async (req, res) => {
-    res.json(await DB_Post.get_posts(req.params.id))
+    try {
+        let id = req.params.id || 0;
+        let db_res = {};
+        if (id != 0) {
+             db_res = await DB_Post.get_posts(id);
+        }
+        res.json(db_res);
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 app.post('/api/add-thread', upload.single('file'), async (req, res) => {
     await DB_Thread.add_thread(req.body, req.file.filename);
 });
 
-app.post('/api/post/:id', upload.single('file'), async (req, res) => {
+app.post('/api/add-post/:id', upload.single('file'), async (req, res) => {
     await DB_Post.add_post(req.body, req.params.id, req.file.filename);
 });
 
